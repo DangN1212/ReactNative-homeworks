@@ -8,6 +8,7 @@
 
 import React, {useState} from 'react';
 import {
+  Switch,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -26,8 +27,11 @@ const App = () => {
   const [newText, setNewText] = useState(null);
   const [itemIdEdit, setItemIdEdit] = useState(null);
   const [isFilterResolved, setIsFilterResolved] = useState(false);
+  const toggleSwitch = () =>
+    setIsFilterResolved(previousState => !previousState);
 
-  const handlePress = params => {
+  // For add/edit text
+  const handlePress = () => {
     if (!newText) {
       return false;
     }
@@ -35,20 +39,19 @@ const App = () => {
     if (itemIdEdit) {
       const itemEditing = todos.find(i => i.id === itemIdEdit);
       if (!itemEditing) return;
+
       itemEditing['text'] = newText;
       setTodos(
         todos.map(item => {
           return item.id === itemIdEdit ? itemEditing : item;
         }),
       );
-      setNewText(null);
       setItemIdEdit(null);
-
-      return;
+    } else {
+      setTodos([...todos, {text: newText, id: randomId(), isResolved: false}]);
     }
 
     setNewText(null);
-    setTodos([...todos, {text: newText, id: randomId(), isResolved: false}]);
   };
 
   const handleOnChange = text => {
@@ -59,6 +62,7 @@ const App = () => {
     setTodos(todos.filter(i => i.id !== id));
   };
 
+  // Handle edit or update isResolved
   const handleEdit = (id, isResolved) => {
     const itemEditing = todos.find(i => i.id === id);
 
@@ -88,10 +92,6 @@ const App = () => {
     return '_' + Math.random().toString(36).substr(2, 9);
   };
 
-  const handleFilter = (isFilter = false) => {
-    setIsFilterResolved(isFilter);
-  };
-
   return (
     <SafeAreaView>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
@@ -102,11 +102,18 @@ const App = () => {
           value={newText}
         />
         <Button title="PRESS" onPress={handlePress} />
-        <Button title="FILTER" onPress={() => handleFilter(true)} />
-        <Button title="SHOW ALL" onPress={() => handleFilter(false)} />
+        <View style={{textAlign: 'center'}}>
+          <Switch
+            trackColor={{false: '#767577', true: '#81b0ff'}}
+            thumbColor={isFilterResolved ? '#f5dd4b' : '#f4f3f4'}
+            ios_backgroundColor="#3e3e3e"
+            onValueChange={toggleSwitch}
+            value={isFilterResolved}
+          />
+          <Text>{isFilterResolved ? 'Done task' : 'All'}</Text>
+        </View>
         <FlatList
           data={todos.filter(i => {
-
             return isFilterResolved ? i.isResolved : true;
           })}
           keyExtractor={item => item.id}
@@ -136,7 +143,9 @@ const TodoItem = params => {
         }}>
         {params.data.item.text}
       </Text>
-      <Button title="Done" onPress={() => params.handleResolve()} />
+      {!params.data.item.isResolved ? (
+        <Button title="Done" onPress={() => params.handleResolve()} />
+      ) : null}
       <Button w title="Edit" onPress={() => params.handleEdit()} />
       <Button title="Delete" onPress={() => params.handleDelete()} />
     </View>
