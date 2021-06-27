@@ -64,19 +64,24 @@ export default function Home() {
 
   useEffect(() => {
     if (time <= 0) {
-      clearInterval(interval);
-      setTime(0);
+      // clearInterval(interval);
     }
   }, [time]);
 
   useEffect(() => {
     if (enableCheck) {
       if (checkValueOfCardsUp()) {
-        setCards(
-          cards.map(i => {
-            return {...i, isUp: false, isDisplay: !i.isUp};
-          }),
-        );
+        setTimeout(() => {
+          setCards(
+            cards.map(i => {
+              if (i.isUp) {
+                i['isDisplay'] = false;
+                i['isUp'] = false;
+              }
+              return i;
+            }),
+          );
+        }, 200);
       } else {
         setTimeout(() => {
           setCards(
@@ -84,28 +89,14 @@ export default function Home() {
               return {...i, isUp: false};
             }),
           );
-        }, 300);
+        }, 200);
       }
-      // setTimeout(() => {
-      //   if (checkValueOfCardsUp) {
-      //     setCards(
-      //       cards.map(i => {
-      //         if (i.isUp) {
-      //           i.isDisplay = false;
-      //           i.isUp = false;
-      //         }
-
-      //         return i;
-      //       })
-      //     )
-      //   }
-      // }, 300);
     }
   }, [enableCheck]);
 
   const checkValueOfCardsUp = () => {
     const cardsUp = cards.filter(i => i.isUp);
-    console.log('check');
+    console.log('check', cardsUp.length);
     if (cardsUp.length !== 2) {
       return false;
     }
@@ -149,6 +140,7 @@ export default function Home() {
   };
 
   const getPaddingHorizontal = () => {
+    console.log(insets.left > insets.right ? insets.left : insets.right)
     return insets.left > insets.right ? insets.left : insets.right;
   };
 
@@ -171,15 +163,15 @@ export default function Home() {
    */
   const getWidthOfCard = params => {
     return (
-      (width - getPaddingHorizontal() * 2) / LAYOUT_SETTING.COLUMN -
-      MARGIN.HORIZONTAL * 2
+      (width - getPaddingHorizontal()*2 ) / LAYOUT_SETTING.COLUMN -
+      MARGIN.HORIZONTAL
     );
   };
 
   const getHeightOfCard = () => {
     return (
       (height - getPaddingVertical() * 2) / LAYOUT_SETTING.ROW -
-      MARGIN.VERTICAL * 2
+      MARGIN.VERTICAL
     );
   };
 
